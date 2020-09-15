@@ -2,46 +2,56 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
+import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
-public class ElementUtils extends WebDrivers {
-    /**
-     * @author: Orhan Demirci
-     */
-    public static WebDriver driver;
+/**
+ * @author : Orhan Demirci
+ */
+public class ElementUtils  {
 
     /**
      *
+     * @param driver
      * @param browser
-     * @return
      */
-    public static WebDriver getDriver(String browser){
+
+    public static WebDriver getDriver(WebDriver driver, String browser){
 //        System.setProperty("webdriver.chrome.driver","C:\\Users\\demir\\SliconLab\\chromedriver.exe");
         if(browser.equals("chrome")) {
+
             WebDriverManager.chromedriver().setup();
             driver = new ChromeDriver();
             driver.manage().window().maximize();
             driver.manage().deleteAllCookies();
+
         }
         else if(browser.equals("firefox")){
+
             WebDriverManager.firefoxdriver().setup();
             driver = new FirefoxDriver();
             driver.manage().window().maximize();
             driver.manage().deleteAllCookies();
-        }
-        else if(browser.equals("edge")){
-            WebDriverManager.edgedriver().setup();
-            driver = new EdgeDriver();
-            driver.manage().window().maximize();
-            driver.manage().deleteAllCookies();
+
         }
         return driver;
+    }
+
+    /**
+     *
+     * @param driver
+     * @param locator
+     */
+    public static void click(WebDriver driver, By locator){
+        driver.findElement(locator).click();
     }
 
     /**
@@ -55,12 +65,12 @@ public class ElementUtils extends WebDrivers {
         return element;
     }
 
+
     /**
      *
      * @param driver
      * @param url
      */
-
     public static void navigateToUrl(WebDriver driver, String url){
         driver.get(url);
     }
@@ -123,7 +133,7 @@ public class ElementUtils extends WebDrivers {
         Select s = new Select(drp);
         System.out.println("Is multiple dropdown? : "+s.isMultiple());
         s.selectByVisibleText(value);
-        Thread.sleep(1000);
+
     }
 
     /**
@@ -167,5 +177,126 @@ public class ElementUtils extends WebDrivers {
         Thread.sleep(1000);
         js.executeScript("arguments[0].style.border='7px dotted blue'",element);
         Thread.sleep(1000);
+    }
+
+    /**
+     *
+     * @param driver
+     * @param locator
+     * @param value
+     */
+    public static void singleValueSelectionDropDown(WebDriver driver, By locator, String value){
+        List<WebElement> droplist = driver.findElements(locator);
+
+        for (int i = 0; i <droplist.size() ; i++) {
+            String text = droplist.get(i).getText();
+            System.out.println(text);
+
+            try{
+                if(!text.isEmpty()){
+                    if(text.equals(value)) {
+                        droplist.get(i).click();
+                        break;
+                    }
+                }
+            }
+            catch (Exception e){
+
+            }
+        }
+    }
+
+    /**
+     *
+     * @param driver
+     * @param locator
+     * @param value
+     */
+    public static void multipleValueSelectionDropDown(WebDriver driver, By locator, String... value){
+        List<WebElement> droplist = driver.findElements(locator);
+        for (int i = 0; i <droplist.size() ; i++) {
+            String text = droplist.get(i).getText();
+            System.out.println(text);
+
+            for (int j = 0; j <value.length ; j++) {
+                try {
+                    if(!text.isEmpty()){
+                        if(text.equals(value[j])){
+                            droplist.get(i).click();
+                        }
+                    }
+                }
+                catch(Exception e){
+
+                }
+
+            }
+
+        }
+    }
+
+
+    //Table Handling
+    public static int getTableRowCount(WebDriver driver, By locator){
+        List<WebElement> rowList = driver.findElements(locator);
+        return rowList.size();
+    }
+    public static int getTableColumnCount(WebDriver driver, By locator){
+        List<WebElement> rowList = driver.findElements(locator);
+        return rowList.size();
+    }
+
+    /**
+     *
+     * @param driver
+     * @param beforeXpath
+     * @param afterXpath
+     * @param completeXpath
+     * @param locatorRow
+     * @param locatorCol
+     */
+    public static void getTableData(WebDriver driver,String beforeXpath, String afterXpath, String completeXpath, By locatorRow, By locatorCol ){
+
+        for (int rowNum = 2; rowNum <= ElementUtils.getTableRowCount(driver,locatorRow) ; rowNum++) {
+            for (int colNum = 1; colNum <= ElementUtils.getTableRowCount(driver,locatorCol) ; colNum++) {
+                String actualXpath = beforeXpath + rowNum + afterXpath + colNum + completeXpath;
+                //System.out.println(actualXpath);
+                String text = driver.findElement(By.xpath(actualXpath)).getText();
+                System.out.println(text);
+            }
+            System.out.println("");
+        }
+    }
+
+    /**
+     *
+     * @param driver
+     * @param waitTime
+     * @param locator
+     */
+    public static void waitElement(WebDriver driver, int waitTime, By locator){
+        WebDriverWait wait = new WebDriverWait(driver,waitTime);
+        wait.until(ExpectedConditions.presenceOfElementLocated(locator));
+    }
+
+    /**
+     *
+     * @param driver
+     * @param locator
+     * @param filePath
+     */
+    public static void uploadFile(WebDriver driver, By locator, String filePath){
+        driver.findElement(locator).sendKeys(filePath);
+    }
+
+    /**
+     *
+     * @param driver
+     * @param username
+     * @param password
+     * @param partialUrl
+     */
+    public static void authenticationPopUp(WebDriver driver, String username, String password, String partialUrl ){
+        driver.get("https://"+username+":"+password+"@"+partialUrl);
     }
 }

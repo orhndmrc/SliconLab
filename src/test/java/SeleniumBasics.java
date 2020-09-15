@@ -11,13 +11,15 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 public class SeleniumBasics  {
     public WebDriver driver;
     @BeforeClass
     public void setUp(){
-        driver=ElementUtils.getDriver("chrome");
+        driver=ElementUtils.getDriver(driver,"firefox");
     }
 
     @Test
@@ -126,6 +128,90 @@ public class SeleniumBasics  {
         ElementUtils.scrollDownToElement(driver,element);
         ElementUtils.highlightElement(driver,element);
 
+    }
+    @Test
+    public void singleValueDropDown(){
+        ElementUtils.navigateToUrl(driver,"https://www.jqueryscript.net/demo/Drop-Down-Combo-Tree/");
+        By select = By.xpath(" //input[@id='justAnInputBox']");
+        ElementUtils.click(driver,select);
+        By selection = By.xpath("//span[@class='comboTreeItemTitle']");
+        ElementUtils.singleValueSelectionDropDown(driver,selection,"choice 6 2");
+
+    }
+    @Test
+    public void multipleValueValueDropDown(){
+        ElementUtils.navigateToUrl(driver,"https://www.jqueryscript.net/demo/Drop-Down-Combo-Tree/");
+        By select = By.xpath(" //input[@id='justAnInputBox']");
+        ElementUtils.click(driver,select);
+        By selection = By.xpath("//span[@class='comboTreeItemTitle']");
+        ElementUtils.multipleValueSelectionDropDown(driver,selection,"choice 7","choice 6 1","choice 4");
+    }
+    @Test
+    public void tableHandling(){
+        driver.get("https://www.w3schools.com/html/html_tables.asp");
+        //*[@id="customers"]/tbody/tr[2]/td[1]
+        //*[@id="customers"]/tbody/tr[3]/td[1]
+        //*[@id="customers"]/tbody/tr[7]/td[1]
+
+        //number of rows
+        List<WebElement> rowList = driver.findElements(By.xpath("//*[@id=\"customers\"]//tr"));
+        int rowCount = rowList.size();
+        System.out.println(rowCount);
+
+        //number of columns
+        List<WebElement> columnList = driver.findElements(By.xpath("//*[@id=\"customers\"]//th"));
+        int columnCount = columnList.size();
+        System.out.println(columnCount);
+
+        String beforeXpath = "//*[@id=\"customers\"]/tbody/tr[";
+        String afterXpath = "]/td[";
+        String completeXpath ="]";
+
+        for (int rowNum = 2; rowNum <= rowCount ; rowNum++) {
+            for (int colNum = 1; colNum <= columnCount ; colNum++) {
+                String actualXpath = beforeXpath + rowNum + afterXpath + colNum + completeXpath;
+                //System.out.println(actualXpath);
+               String text = driver.findElement(By.xpath(actualXpath)).getText();
+               System.out.println(text);
+            }
+            System.out.println("");
+        }
+    }
+    @Test
+    public void exampleTableHandling(){
+        ElementUtils.navigateToUrl(driver,"https://rahulshettyacademy.com/AutomationPractice/");
+        String beforeXpath = "//*[@id=\"product\"]/tbody/tr[";
+        String afterXpath = "]/td[";
+        String completeXpath = "]";
+        By locatorRow =By.xpath("//*[@id=\"product\"]//tr");
+        By locatorCol = By.xpath("//*[@id=\"product\"]//th");
+        ElementUtils.getTableData(driver,beforeXpath,afterXpath,completeXpath,locatorRow,locatorCol);
+    }
+    @Test
+    public void uploadingFiles(){
+        driver.get("https://cgi-lib.berkeley.edu/ex/fup.html");
+        driver.findElement(By.xpath("//input[@name='upfile']")).sendKeys("C:\\Users\\demir\\Desktop\\Capture.jpg");
+    }
+    @Test
+    public void authenticationPopUp(){
+       // driver.get("https://the-internet.herokuapp.com/basic_auth");
+        //username = admin
+        //password = admin
+        driver.get("https://admin:admin@the-internet.herokuapp.com/basic_auth");
+
+    }
+    @Test
+    public void windowHandling(){
+        driver.get("http://www.popuptest.com/goodpopups.html");
+        driver.findElement(By.className("black")).click();
+
+        Set<String> handles = driver.getWindowHandles();
+        Iterator<String> it = handles.iterator();
+        String parentWindowID = it.next();
+        System.out.println("parent window is: "+parentWindowID);
+
+        String childWindowID = it.next();
+        System.out.println("child window is: "+childWindowID);
     }
     @AfterClass
     public void tearDown(){
