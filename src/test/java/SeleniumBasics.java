@@ -19,7 +19,7 @@ public class SeleniumBasics  {
     public WebDriver driver;
     @BeforeClass
     public void setUp(){
-        driver=ElementUtils.getDriver(driver,"firefox");
+        driver=ElementUtils.getDriver(driver,"chrome");
     }
 
     @Test
@@ -167,7 +167,7 @@ public class SeleniumBasics  {
         String afterXpath = "]/td[";
         String completeXpath ="]";
 
-        for (int rowNum = 2; rowNum <= rowCount ; rowNum++) {
+        for (int rowNum = 1; rowNum <= rowCount ; rowNum++) {
             for (int colNum = 1; colNum <= columnCount ; colNum++) {
                 String actualXpath = beforeXpath + rowNum + afterXpath + colNum + completeXpath;
                 //System.out.println(actualXpath);
@@ -193,11 +193,14 @@ public class SeleniumBasics  {
         driver.findElement(By.xpath("//input[@name='upfile']")).sendKeys("C:\\Users\\demir\\Desktop\\Capture.jpg");
     }
     @Test
-    public void authenticationPopUp(){
-       // driver.get("https://the-internet.herokuapp.com/basic_auth");
-        //username = admin
-        //password = admin
-        driver.get("https://admin:admin@the-internet.herokuapp.com/basic_auth");
+    public void authenticationPopUp() throws InterruptedException {
+//       driver.get("https://the-internet.herokuapp.com/basic_auth");
+//       Thread.sleep(2000);
+//      username = "admin";
+//      password = "admin";
+      //driver.get("https://admin:admin@the-internet.herokuapp.com/basic_auth");
+        ElementUtils.authenticationPopUp(driver,"admin","admin","the-internet.herokuapp.com/basic_auth");
+        Thread.sleep(2000);
 
     }
     @Test
@@ -213,8 +216,84 @@ public class SeleniumBasics  {
         String childWindowID = it.next();
         System.out.println("child window is: "+childWindowID);
     }
-    @AfterClass
-    public void tearDown(){
-        driver.quit();
+    @Test
+    public void javaScriptExecuter(){
+        driver.get("http://darksky.net");
+        System.out.println(JavaScriptUtil.getTitleByJS(driver));
     }
+    @Test
+    public void frameHandling(){
+        driver.get("http://londonfreelance.org/courses/frames/index.html");
+
+        driver.switchTo().frame(driver.findElement(By.name("main")));
+        WebElement header = driver.findElement(By.xpath("//h2[contains(text(),'Title bar')]"));
+        System.out.println(header.getText());
+        System.out.println(driver.getTitle());
+        driver.switchTo().defaultContent();//getting back to the main page
+        System.out.println();
+
+    }
+    @Test
+    public void selectWithoutSelectClass() throws InterruptedException {
+        driver.get("https://www.amazon.com/");
+        By options = By.xpath("//*[@id='searchDropdownBox']//option");
+        ElementUtils.singleValueSelectionDropDown(driver,options,"Amazon Warehouse");
+        Thread.sleep(3000);
+
+    }
+    @Test
+    public void multipleSelection() throws InterruptedException {
+        driver.get("https://www.jqueryscript.net/demo/Drop-Down-Combo-Tree/");
+        By selectBox = By.id("justAnInputBox");
+        ElementUtils.click(driver,selectBox);
+        By multi = By.xpath("//span[@class='comboTreeItemTitle']");
+        ElementUtils.multipleValueSelectionDropDown(driver,multi,"choice 4","choice 2 3","choice 7","choice 6 1");
+        Thread.sleep(3000);
+    }
+    @Test
+    public void alertHandle() throws InterruptedException {
+        driver.get("https://the-internet.herokuapp.com/javascript_alerts");
+        By alerButton = By.xpath("//*[text()='Click for JS Confirm']");
+        ElementUtils.alertAccept(driver,alerButton);
+
+    }
+    @Test
+    public void frameHandling2(){
+        driver.get("http://londonfreelance.org/courses/frames/index.html");
+        driver.switchTo().frame(4);
+        System.out.println(driver.findElement(By.xpath("//*[contains(text(),'provides alternate navigation')]")).getText());
+    }
+    @Test
+    public void windowHandling2() throws InterruptedException {
+        driver.get("https://promo.bankofamerica.com/multiproduct/?cm_mmc=ENT-Consumer-_-Google-PS-_-bankofamerica-_-Brand_CoreBrand&gclid=Cj0KCQjwtsv7BRCmARIsANu-CQc51TXF_idY4AENSaCcem3cM9vnDCuFRv-K5Nc9i4xF8eNne9Q1Jw8aAhw2EALw_wcB&gclsrc=aw.ds");
+        By clickButton = By.xpath("//div[@class='tile credit front']//a[@id='Card_GetStarted_MultiproductRWD']");
+        Thread.sleep(5000);
+        ElementUtils.windowHandle(driver,clickButton);
+        System.out.println(driver.findElement(By.xpath("//h2[contains(text(),'res & ben')]")).getText());
+    }
+    @Test
+    public void amazonList(){
+        driver.get("https://www.amazon.com/");
+        List<WebElement> list = driver.findElements(By.xpath("//*[@id='searchDropdownBox']/option"));
+        for (int i = 0; i < list.size() ; i++) {
+            String text = list.get(i).getText();
+            System.out.println(text);
+            if(text.contains("Electronics")){
+                list.get(i).click();
+                break;
+            }
+
+        }
+    }
+    @Test
+    public void amazonListSelect(){
+        driver.get("https://www.amazon.com/");
+        Select sel = new Select(driver.findElement(By.xpath("//*[@id='searchDropdownBox']")));
+        sel.selectByVisibleText("Electronics");
+    }
+//    @AfterClass
+//    public void tearDown() throws IOException {
+//        driver.quit();
+//
+//    }
 }
